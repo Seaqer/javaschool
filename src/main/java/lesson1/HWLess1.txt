@@ -1,0 +1,134 @@
+Ветвления, циклы
+______________________________________________________________________________________
+2004
+
+import java.io.*;
+
+public class Solution  {
+    public static void main(String[] Args) throws IOException {
+        int year = Integer.parseInt(new BufferedReader(new InputStreamReader(System.in)).readLine());
+        if (year <= 2100 && year >= 1000)
+            if (year % 400 == 0 || (year % 100 != 0 && year % 4 == 0)) System.out.println(1);
+            else System.out.println(0);
+        else System.out.println("Введите число 1000 ? y ? 2100");
+    }
+}
+
+______________________________________________________________________________________
+2011 
+import java.io.*;
+
+public class Solution {
+    public static void main(String[] Args) throws IOException {
+        int age = Integer.parseInt(new BufferedReader(new InputStreamReader(System.in)).readLine());
+        if (age >=0 && age < 7) System.out.println("preschool child");
+        else if(age > 6 && age < 18) System.out.println(String.format("schoolchild %d", age-6));
+        else if(age > 17 && age< 23) System.out.println(String.format("student %d", age-17));
+        else if(age > 22 && age< 151 ) System.out.println("specialist");
+        else System.out.println("Возраст должен быть равен 0 ? n ? 150");
+    }
+}
+
+Массивы
+_____________________________________________________________________________________
+2021
+import java.io.*;
+import java.util.*;
+
+public class Solution {
+    public static void main(String[] Args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int lenght =Integer.parseInt(br.readLine());
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        StringBuilder sb = new StringBuilder();
+            int[] mass = new int[lenght];
+            for(int i =0; i<lenght;i++) mass[i]=Integer.parseInt(st.nextToken());
+            for (int i = 0; i < 2; i++) {
+                int max = mass[0];
+                for (int j : mass) if (j > max) max = j;
+                for (int j = 0; j < lenght; j++) {
+                    if (mass[j] == max) mass[j] = mass[j] / 2;
+                }
+            }
+            for (int j=0; j<lenght; j++)
+            {
+                if(j!=0)sb.append(" ");
+                sb.append(mass[j]);
+            }
+            System.out.println(sb);
+    }
+}
+______________________________________________________________________________________
+2031
+import java.io.*;
+import java.util.*;
+
+public class Solution  {
+    public static void main(String[] Args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int lenght =Integer.parseInt(br.readLine());
+        StringTokenizer st = new StringTokenizer(br.readLine());
+
+            StringBuilder result = new StringBuilder();
+            int[] mass = new int[lenght * 2];
+            int count=0;
+            for (int i = 0; i < lenght; i++) mass[i] = Integer.parseInt(st.nextToken());
+            Arrays.sort(mass,0,lenght);
+            for (int i=0; i< lenght; i++) {
+                mass[i+lenght] = CountNumber(i, mass);
+                if (mass[i+lenght] > 1) ++count;
+            }
+            for(int i=0;i<lenght;i++) {
+                if (mass[i + lenght] > 1) {
+                    if (result.length() > 0) result.append(" ");
+                    result.append(mass[i]);
+                }
+            }
+            result.insert(0,"\n");
+            result.insert(0,count);
+            System.out.println(result);
+
+    }
+
+    static int CountNumber(int indNumber,int[] mass) {
+        int count = 0;
+        for (int i = 0; i < mass.length/2; i++)
+            if (mass[i] == mass[indNumber])
+            {
+                if (i < indNumber) return 0;
+                ++count;
+            }
+        return count;
+    }
+}
+}
+
+Строки
+______________________________________________________________________________________
+2039
+
+import java.io.*;
+
+public class Solution {
+        public static void main(String[] Args) throws IOException {
+            String str = new BufferedReader(new InputStreamReader(System.in)).readLine();
+            int count=0;
+            String[] mass = str.split("[^A-Za-z]+",0);
+            for(String str1:mass) if(!str1.equals(""))++count;
+            System.out.println(count);
+        }
+    }
+______________________________________________________________________________________
+
+2038
+import java.io.*;
+
+public class Solution {
+    public static void main(String[] Args) throws IOException {
+        String str = new BufferedReader(new InputStreamReader(System.in)).readLine();
+        String[] mass = str.split("[^A-Za-z]+");
+        int max=0;
+        for (String curStr: mass)  if(curStr.length()>max) max=curStr.length();
+        if(max!=0)System.out.println(max);
+    }
+}
