@@ -41,9 +41,6 @@ public class FixedThreadPool implements ThreadPool {
      * @param runnable Задание
      */
     public void execute(Runnable runnable) {
-        if (!state) {
-            throw new RuntimeException("Пул не запущен");
-        }
         synchronized (tasks) {
             tasks.add(runnable);
             tasks.notify();
@@ -72,7 +69,11 @@ public class FixedThreadPool implements ThreadPool {
         @Override
         public void run() {
             while (true) {
-                executeTask().run();
+                try {
+                    executeTask().run();
+                } catch (RuntimeException e){
+                    return;
+                }
             }
         }
 
@@ -93,7 +94,7 @@ public class FixedThreadPool implements ThreadPool {
                     return tasks.poll();
                 }
             } catch (InterruptedException e) {
-                interrupt();
+                currentThread().interrupt();
                 throw new RuntimeException(e);
             }
         }
