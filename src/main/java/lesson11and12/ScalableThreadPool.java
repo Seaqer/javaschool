@@ -24,21 +24,9 @@ public class ScalableThreadPool implements ThreadPool {
         threads = IntStream.range(0, minThreads)
                 .mapToObj(t -> new cycleThread())
                 .collect(Collectors.toList());
-        state = false;
-    }
+        threads.forEach(Thread::start);
 
-    /**
-     * Запустить потоки из пула потоков
-     */
-    public void start() {
-        if (state) {
-            throw new RuntimeException("Пул уже запущен");
-        }
-
-        synchronized (this) {
-            threads.forEach(Thread::start);
-            state = true;
-        }
+        state = true;
     }
 
     /**
@@ -50,10 +38,16 @@ public class ScalableThreadPool implements ThreadPool {
         if (!state) {
             throw new RuntimeException("Пул не запущен");
         }
+        Objects.requireNonNull(runnable);
 
         synchronized (tasks) {
+            if (!state) {
+                throw new IllegalStateException("Пул не запущен");
+            }
+
             tasks.add(runnable);
             tasks.notify();
+            addThread();
         }
     }
 
@@ -64,7 +58,7 @@ public class ScalableThreadPool implements ThreadPool {
         if (!state) {
             throw new RuntimeException("Пул уже остановлен");
         }
-        synchronized (this) {
+        synchronized (tasks) {
             threads.forEach(Thread::interrupt);
             state = false;
         }
@@ -76,17 +70,20 @@ public class ScalableThreadPool implements ThreadPool {
      * @param thread Поток
      */
     private void removeThread(Thread thread) {
-        if (workThread > minThreads && tasks.size() != workThread) {
-            Iterator<Thread> iterator = threads.listIterator();
-            while (iterator.hasNext()) {
-                Thread curentThread = iterator.next();
-                if (curentThread.equals(thread)) {
-                    curentThread.interrupt();
-                    iterator.remove();
+        synchronized (threads) {
+            if (workThread > minThreads && tasks.size() < workThread) {
+                System.out.println("ochered"+tasks.size());
+                Iterator<Thread> iterator = threads.listIterator();
+                while (iterator.hasNext()) {
+                    Thread curentThread = iterator.next();
+                    if (curentThread.equals(thread)) {
+                        curentThread.interrupt();
+                        iterator.remove();
+                    }
                 }
+                --workThread;
+                thread.interrupt();
             }
-            --workThread;
-            thread.interrupt();
         }
     }
 
@@ -94,25 +91,12 @@ public class ScalableThreadPool implements ThreadPool {
      * Добавить поток в пул потоков
      */
     private void addThread() {
-        if (workThread < maxThreads && tasks.size() != workThread) {
-            Thread thread = new cycleThread();
-            threads.add(thread);
-            thread.start();
-            ++workThread;
-        }
-    }
-
-    /**
-     * Проверка нужности создания/удаления потока
-     *
-     * @param thread
-     */
-    private void checkCountThread(Thread thread) {
-        synchronized (tasks) {
-            if (tasks.size() < workThread) {
-                removeThread(thread);
-            } else {
-                addThread();
+        synchronized (threads) {
+            if (workThread < maxThreads && tasks.size() > workThread) {
+                Thread thread = new cycleThread();
+                threads.add(thread);
+                thread.start();
+                ++workThread;
             }
         }
     }
@@ -128,28 +112,33 @@ public class ScalableThreadPool implements ThreadPool {
             Runnable task;
             while (true) {
                 task = executeTask();
-                checkCountThread(Thread.currentThread());
                 if (task == null || isInterrupted()) {
                     interrupt();
                     return;
                 }
                 task.run();
+
             }
         }
 
         /**
          * Ожидание потоком задания из очереди
          *
-         * @return
+         * @return Задача
          */
         private Runnable executeTask() {
             Runnable task;
             try {
                 synchronized (tasks) {
-                    while (tasks.isEmpty()) {
-                        tasks.wait();
+                    if (isInterrupted()) {
+                        return null;
+                    } else {
+                        while (tasks.size() < 1) {
+                            removeThread(Thread.currentThread());
+                            tasks.wait();
+                        }
+                        task = tasks.poll();
                     }
-                    task = tasks.poll();
                 }
             } catch (InterruptedException e) {
                 task = null;
