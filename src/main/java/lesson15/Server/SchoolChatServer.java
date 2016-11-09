@@ -14,7 +14,7 @@ public class SchoolChatServer {
     private final int port;
     private final List<Worker> clients = new CopyOnWriteArrayList<>();
     private final ExecutorService executorService;
-    private volatile boolean IsDown = true;
+    private volatile boolean isDown = true;
     private ServerSocket serverSocket;
     private final int countMaxUser;
     private int countUser = 0;
@@ -29,12 +29,12 @@ public class SchoolChatServer {
      * Запустить сервер
      */
     public void startServer() {
-        if (!IsDown) {
+        if (!isDown) {
             throw new RuntimeException("Сервер уже работает");
         }
 
         try {
-            IsDown = false;
+            isDown = false;
             String command;
             serverSocket = new ServerSocket(port);
             Scanner console = new Scanner(System.in);
@@ -60,10 +60,10 @@ public class SchoolChatServer {
      * Остановить сервер
      */
     public void shutdownServer() throws IOException {
-        if (IsDown) {
+        if (isDown) {
             throw new RuntimeException("Сервер уже остановлен");
         }
-        IsDown = true;
+        isDown = true;
         clients.forEach(Worker::close);
         if (!serverSocket.isClosed()) {
             serverSocket.close();

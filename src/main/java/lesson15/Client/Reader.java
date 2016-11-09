@@ -19,7 +19,7 @@ public class Reader implements Runnable {
     public void run() {
         Response response;
 
-        while (true) {
+        while (reciver.getState()) {
             try {
                 response = reciver.sendMessage(new RequestImpl(CodeMessage.ACCEPT, null));
 
@@ -31,7 +31,7 @@ public class Reader implements Runnable {
                 }
                 Thread.sleep(1000);
             } catch (ClassNotFoundException | IOException | InterruptedException e) {
-                e.printStackTrace();
+                return;
             }
         }
     }
