@@ -5,8 +5,10 @@ import lesson15.Common.Interface.Request;
 import lesson15.Common.Networking.ResponseAnswer;
 import lesson15.Common.Networking.ResponseMessage;
 
+
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,26 +32,44 @@ public class Worker implements Runnable {
         System.out.println("Соединение установленно " + socket.getInetAddress());
         try (ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
              ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream())) {
-            String nickName;
             senderMessage = new Sender(outputStream, inputStream);
-            Request request = senderMessage.getRequest();
-            nickName = request.getMessage().getSender();
+            socket.setSoTimeout(900000);
 
-            if (validate(nickName)) {
-                this.nickName = nickName;
-                sendMessage(new Message("system", nickName + " вошел в чат", "system"));
+            if (authenticationClient()) {
                 messageHandler();
-            } else {
-                senderMessage.sendResponse(new ResponseAnswer(ANSWER_ERR, "Логин уже занят"));
             }
         } catch (ClassNotFoundException e) {
             System.out.println("Неизвестный формат сообщения");
+        } catch (SocketTimeoutException e) {
+            System.out.println("Превышен таймут в 15 минут " + socket.getInetAddress());
         } catch (IOException e) {
-            System.out.println("Соединение разорвано " + socket.getInetAddress());
+            System.out.println("Ошибка соединения " + socket.getInetAddress());
         } finally {
+            System.out.println("Соединение разорвано " + socket.getInetAddress());
             removeSocket();
         }
 
+    }
+
+    /**
+     * Проверка пользователя
+     */
+    private boolean authenticationClient() throws IOException, ClassNotFoundException {
+        String nickName;
+        boolean result;
+        Request request = senderMessage.getRequest();
+        nickName = request.getMessage().getSender();
+
+        if (validate(nickName)) {
+            this.nickName = nickName;
+            sendMessage(new Message("system", nickName + " вошел в чат", "system"));
+            result = true;
+        } else {
+            senderMessage.sendResponse(new ResponseAnswer(ANSWER_ERR, "Логин уже занят"));
+            result = false;
+        }
+
+        return result;
     }
 
     /**
@@ -71,6 +91,9 @@ public class Worker implements Runnable {
                 case ACCEPT:
                     getMessages();
                     break;
+                case EXIT:
+                    senderMessage.sendResponse(new ResponseAnswer(EXIT, "выход"));
+                    return;
                 default:
                     throw new RuntimeException("invalid format message");
             }
@@ -114,7 +137,7 @@ public class Worker implements Runnable {
      * @return реузльтат проверки
      */
     private boolean validate(String name) {
-        return !name.isEmpty() && clients.stream().noneMatch(x -> x.nickName.equals(name));
+        return !name.isEmpty() && clients.stream().noneMatch(x -> x.nickName.equals(name)) && !name.equals("system");
     }
 
     /**

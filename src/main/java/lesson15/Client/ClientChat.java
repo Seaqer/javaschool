@@ -17,6 +17,7 @@ import static lesson15.Common.Networking.CodeMessage.*;
 public class ClientChat {
     private final String ADDR_IP;
     private final int PORT;
+    private final int TIMEOUT = 900000;
 
     public ClientChat(String ADDR_IP, int PORT) {
         this.ADDR_IP = ADDR_IP;
@@ -33,9 +34,8 @@ public class ClientChat {
         try (Socket socket = new Socket(ADDR_IP, PORT);
              ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
              ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream())) {
-
             Reciver reciver = new Reciver(outputStream, inputStream);
-
+            socket.setSoTimeout(TIMEOUT);
             System.out.println("Введите nickname:");
             nickName = sc.nextLine();
             Response response = reciver.sendMessage(new RequestImpl(AUTH, new Message(nickName, null, null)));

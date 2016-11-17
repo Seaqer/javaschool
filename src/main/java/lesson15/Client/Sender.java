@@ -38,8 +38,9 @@ public class Sender {
         while (true) {
             try {
                 message = sc.nextLine();
-                if (reciver.getState()) {
+                if (reciver.getState() ) {
                     if (message.equals("exit")) {
+                        reciver.sendMessage(new RequestImpl(CodeMessage.EXIT, new Message(nickName, "system", "")));
                         break;
                     }
                     args = validateMessage(message);

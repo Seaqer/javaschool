@@ -7,5 +7,6 @@ public enum CodeMessage {
     ACCEPT,
     ANSWER_MESSAGE,
     ANSWER_OK,
-    ANSWER_ERR
+    ANSWER_ERR,
+    EXIT
 }
