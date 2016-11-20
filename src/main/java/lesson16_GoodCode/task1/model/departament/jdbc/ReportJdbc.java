@@ -22,4 +22,12 @@ public class ReportJdbc implements Report<String,Double> {
         this.employees = employees;
         this.total = total;
     }
+
+    @Override
+    public String toString() {
+        return "Report{" +
+                "employees=" + employees +
+                ", total=" + total +
+                '}';
+    }
 }

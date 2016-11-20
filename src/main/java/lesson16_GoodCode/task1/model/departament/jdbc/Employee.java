@@ -28,4 +28,12 @@ public class Employee implements EmployeeI<String,Double> {
     public Double getSalary() {
         return salary;
     }
+
+    @Override
+    public String toString() {
+        return "Employee{"
+                + name  +
+                "," + salary +
+                '}';
+    }
 }

@@ -9,6 +9,7 @@ import lesson16_GoodCode.task1.model.converter.View;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class HtmlSerializer implements Serializer {
 
@@ -35,7 +36,12 @@ public class HtmlSerializer implements Serializer {
         final View table = new Tag("<table>", "</table>");
 
         table.addItem(getRow("Employee", "Salary"));
-        employees.forEach((e) -> table.addItem(getRow(e.getName().toString(), e.getSalary().toString())));
+        employees.forEach(new Consumer<EmployeeI<?, ?>>() {
+            @Override
+            public void accept(EmployeeI<?, ?> e) {
+                table.addItem(HtmlSerializer.this.getRow(e.getName().toString(), e.getSalary().toString()));
+            }
+        });
         table.addItem(getRow("Total", report.getTotal().toString()));
 
         return table;
