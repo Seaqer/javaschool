@@ -1,6 +1,8 @@
-package lesson16_GoodCode.task1.model;
+package lesson16_GoodCode.task1.model.departament;
 
 import java.time.LocalDate;
+
+
 
 /**
  * Временной интервал
@@ -28,7 +30,7 @@ public class DateRange {
      * @param dateFrom Дата начала
      * @param dateTo Дата окончания
      */
-    public DateRange(String departmentId, LocalDate dateFrom, LocalDate dateTo) {
+    public DateRange(LocalDate dateFrom, LocalDate dateTo) {
 
         this.dateFrom = dateFrom;
         this.dateTo = dateTo;
